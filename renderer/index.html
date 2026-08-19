@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Tasks</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="page">
+
+  <div id="list-view">
+    <div class="header-row">
+      <div>
+        <h1>Tasks</h1>
+        <p class="subtitle" id="subtitle">Sorted by urgency</p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn" id="backups-btn">Backups</button>
+        <button class="btn primary" id="new-task-btn">+ New task</button>
+      </div>
+    </div>
+
+    <div id="backups-panel" class="hidden"></div>
+    <div id="page-tabs" class="page-tabs"></div>
+    <div id="new-task-form" class="hidden"></div>
+    <div id="task-list" class="task-list"></div>
+  </div>
+
+  <div id="card-view" class="hidden">
+    <button class="link-btn" id="back-btn">&larr; All tasks</button>
+    <div id="task-card"></div>
+  </div>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>

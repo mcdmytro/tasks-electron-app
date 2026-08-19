@@ -1,0 +1,8 @@
+node_modules/
+dist/
+tasks-data.json
+tasks-backups.json
+tasks-data.json.unreadable-*
+.DS_Store
+electron-builder
+tasks-electron-app@1.0.0

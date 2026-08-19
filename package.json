@@ -1,0 +1,33 @@
+{
+  "name": "tasks-electron-app",
+  "version": "1.0.0",
+  "description": "Task cards app with automatic file-backed storage, no prompts.",
+  "main": "main.js",
+  "author": "Dmytro",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --mac"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.dmytro.tasksapp",
+    "productName": "Tasks",
+    "directories": {
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    }
+  },
+  "allowScripts": {
+    "electron@33.4.11": true
+  }
+}
