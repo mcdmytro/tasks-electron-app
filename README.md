@@ -1,108 +1,93 @@
-# Tasks (Electron app, auto file storage)
+# Tasks
 
-A real desktop app — not a wrapped webpage. It keeps a `tasks-data.json`
-file right next to `main.js`, created automatically the first time you run
-it, read automatically every time after. No file pickers, no prompts.
+A simpele desktop app for logging tasks and tracking the completion 
+progress them in a light view
 
-## 1. Install and run
+## Prerequisites
+
+- **macOS** (Apple Silicon — the build below targets arm64)
+- **Node.js** (includes npm). Check with `node -v` in Terminal — if that
+  fails, install from [nodejs.org](https://nodejs.org) (download the
+  macOS installer) or, if you have Homebrew, `brew install node`.
+- **Xcode Command Line Tools** — usually already present on macOS; if a
+  step below complains about missing compilers, run
+  `xcode-select --install`.
+
+## Install
 
 ```bash
-cd tasks-electron-app
 npm install
-npm start
-```
-
-The first launch creates `tasks-data.json` and `tasks-backups.json` in this
-same folder — empty, with default "Life"/"Work" pages. Every change you
-make in the app writes straight to `tasks-data.json` immediately.
-
-## 2. Bring over your existing tasks (one-time)
-
-If you have tasks already saved in the old browser-based version, export
-that data and paste it in here before your first `npm start`:
-
-1. Open the old `tasks-app.html` in Chrome.
-2. Open DevTools (Cmd+Option+I) → Console tab.
-3. Run: `copy(localStorage.getItem('tasks_default'))` (or `'tasks'` if you
-   never renamed it) — this copies the raw task array to your clipboard.
-4. Also grab pages: `copy(localStorage.getItem('pages_default'))`.
-5. Open `tasks-data.json` in this folder in a text editor and paste your
-   tasks array into the `"tasks"` field, and your pages array into
-   `"pages"`, so the file looks like:
-   ```json
-   {
-     "tasks": [ /* paste your tasks array here */ ],
-     "pages": [ /* paste your pages array here, or leave the default */ ],
-     "currentPageId": "life"
-   }
-   ```
-6. Save the file, then `npm start`.
-
-## 3. Packaging as a real, double-clickable `.app`
-
-This has to be run **on your Mac**, not anywhere else — `electron-builder`
-needs to run on the actual target OS to produce a working mac build.
-
-```bash
 npm run dist
 ```
 
-This creates a `dist/` folder containing `Tasks.app` (plus a `.dmg` and
-`.zip`). Drag `Tasks.app` into `/Applications`. From then on it shows up in
-Spotlight, Launchpad, and the Applications folder like any normal app.
+The first `npm install` may pause with a message about install scripts
+needing approval (this is normal, from Electron's own setup step) — run
+`npm approve-scripts electron` when prompted, then repeat `npm install`.
 
-**First launch will be blocked by Gatekeeper** (the app isn't
-code-signed/notarized) — right-click `Tasks.app` → **Open** once to bypass
-this. After that first approval, it opens normally forever, including via
-double-click or Spotlight.
+This builds `dist/mac-arm64/Tasks.app`. Drag it into `/Applications`.
 
-### Important: where your data lives changes once packaged
+First launch: right-click `Tasks.app` → **Open** (it's unsigned, so macOS
+blocks a plain double-click the first time). After that, opens normally —
+Spotlight, Launchpad, double-click, all work.
 
-In dev mode (`npm start`), `tasks-data.json` sits right next to `main.js` —
-easy to find. Once packaged, the `.app` bundle itself is read-only, so the
-app automatically switches to macOS's standard per-user data folder:
+That's it. The app creates its own data file automatically on first run —
+nothing to configure.
+
+## Where your data lives
 
 ```
 ~/Library/Application Support/Tasks/tasks-data.json
 ~/Library/Application Support/Tasks/tasks-backups.json
 ```
 
-To find it in Finder: **Go → Go to Folder…** (Cmd+Shift+G), paste
-`~/Library/Application Support/Tasks`, hit Enter.
+`tasks-backups.json` holds automatic rolling snapshots (created on new
+task / delete / edit) — restore any of them from the **Backups** button
+in the app.
 
-**If you'd already been using `npm start` and have real tasks in the dev
-copy**, copy those two files into the folder above (create the `Tasks`
-folder if it doesn't exist yet — run the packaged app once first so it
-creates it) before you start relying on the packaged app, or that data
-won't carry over automatically.
+## Updating the app later
 
-### Updating the app later
+Replace the source files, then rebuild and reinstall:
 
-Whenever I hand you an updated `renderer/app.js` (or you edit it
-yourself), just re-run `npm run dist` and replace `Tasks.app` in
-`/Applications` with the new build — your data file is untouched since it
-lives outside the app bundle entirely.
+```bash
+rm -rf dist
+npm run dist
+```
 
-## 4. Sharing this with someone else
+Drag the new `Tasks.app` over the old one in `/Applications`. Your data is
+untouched — it lives outside the app bundle.
 
-**Dev mode**: copy the whole `tasks-electron-app` folder (minus
-`tasks-data.json`/`tasks-backups.json`, which are yours) to them; their
-first `npm start` creates a fresh, empty data file of their own.
+## Sharing this project
 
-**Packaged app**: just send them `Tasks.app` (or have them run `npm run
-dist` themselves). Since packaged data lives in each person's own
-`~/Library/Application Support/Tasks/`, two separate people running the
-same `Tasks.app` on two separate Macs automatically get two separate data
-files — no shared-storage risk at all.
+Send the whole folder (skip `node_modules/` and `dist/`, they're
+regenerated by the steps above). Each person who runs `npm install &&
+npm run dist` gets their own independent data file — nothing is shared
+between installs.
 
-## How it differs from the old version
+## Development mode (optional)
 
-- No `localStorage`, no browser storage quirks, no shared-origin bug —
-  the file is the single source of truth, managed by a small Node.js
-  backend (`main.js`) with real filesystem access.
-- No Export/Import buttons — the `.json` file itself already is your
-  portable backup. Copy it, back it up, or open it in a text editor
-  anytime.
-- The "Backups" button and automatic snapshots still work exactly as
-  before (on new task / delete / edit-save), just stored in
-  `tasks-backups.json` instead of browser storage.
+For quick testing without building a full `.app`:
+
+```bash
+npm start
+```
+
+In this mode, `tasks-data.json` sits right next to `main.js` instead of
+in `~/Library/Application Support/Tasks/` — handy for peeking at the raw
+file, but keep in mind it's a **separate** data file from the packaged
+app's.
+
+## Bringing over existing tasks (only if you have some already)
+
+If you were using an earlier browser-based version of this app and have
+real tasks saved there:
+
+1. Open the old version in Chrome → DevTools (Cmd+Option+I) → Console.
+2. Run `copy(localStorage.getItem('tasks_default'))` — copies your tasks
+   to the clipboard.
+3. Also run `copy(localStorage.getItem('pages_default'))` for your pages.
+4. Launch the new app once (via `npm run dist` + install, above) so it
+   creates its own `tasks-data.json`, then quit it.
+5. Open `~/Library/Application Support/Tasks/tasks-data.json` in a text
+   editor and paste your copied arrays into the matching `"tasks"` and
+   `"pages"` fields.
+6. Save, relaunch the app.
