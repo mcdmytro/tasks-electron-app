@@ -1,7 +1,7 @@
 # Tasks
 
 A simpele desktop app for logging tasks and tracking the completion 
-progress them in a light view
+progress in a light view
 
 ## Prerequisites
 
